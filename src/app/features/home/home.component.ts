@@ -18,7 +18,6 @@ export class HomeComponent implements OnInit {
   searchQuery = '';
   loading = false;
 
-  
   showModal = false;
   bicicletaSeleccionada: BicicletaResponseDto | null = null;
   cantidad = 1;
@@ -50,44 +49,55 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     this.loading = true;
     this.bicicletaService.listar().subscribe({
-      next: data  => { this.bicicletas = data; this.aplicarFiltros(); this.loading = false; },
-      error: ()   => { this.loading = false; }
+      next: data  => { 
+        this.bicicletas = data || []; 
+        this.aplicarFiltros(); 
+        this.loading = false; 
+      },
+      error: ()   => { 
+        this.bicicletas = [];
+        this.aplicarFiltros();
+        this.loading = false; 
+      }
     });
   }
 
   aplicarFiltros() {
-    let lista = this.bicicletas.filter(b => b.cantidadInventario > 0);
+    let lista = (this.bicicletas || []).filter(b => b && b.cantidadInventario > 0);
+    
     if (this.filtroActivo !== 'TODAS') {
-      lista = lista.filter(b => b.tipo === this.filtroActivo);
+      lista = lista.filter(b => b && b.tipo === this.filtroActivo);
     }
-    if (this.searchQuery.trim()) {
+    
+    if (this.searchQuery && this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase();
       lista = lista.filter(b =>
-        b.marca.toLowerCase().includes(q) ||
-        b.modelo.toLowerCase().includes(q) ||
-        String(b.codigo).includes(q)
+        b && (
+          (b.marca?.toLowerCase().includes(q)) ||
+          (b.modelo?.toLowerCase().includes(q)) ||
+          (String(b.codigo || '').includes(q))
+        )
       );
     }
     this.bicicletasFiltradas = lista;
   }
 
-  
   get totalVistaCatalogo(): number {
-    let lista = this.bicicletas.filter(b => b.cantidadInventario > 0);
+    let lista = (this.bicicletas || []).filter(b => b && b.cantidadInventario > 0);
     if (this.filtroActivo !== 'TODAS') {
-      lista = lista.filter(b => b.tipo === this.filtroActivo);
+      lista = lista.filter(b => b && b.tipo === this.filtroActivo);
     }
     return lista.length;
   }
 
   get todoInventarioAgotado(): boolean {
-    return this.bicicletas.length > 0 && this.bicicletas.every(b => b.cantidadInventario <= 0);
+    const lista = this.bicicletas || [];
+    return lista.length > 0 && lista.every(b => b && b.cantidadInventario <= 0);
   }
 
   onSearch(q: string) { this.searchQuery = q; this.aplicarFiltros(); }
   onFiltro(v: string) { this.filtroActivo = v; this.aplicarFiltros(); }
 
-  // Modal
   abrirModalCompra(b: BicicletaResponseDto) {
     this.bicicletaSeleccionada = b;
     this.cantidad = 1;
@@ -101,7 +111,7 @@ export class HomeComponent implements OnInit {
     this.showModal = true;
     this.clienteService.listar().subscribe({
       next: list => {
-        this.clientesModal = list;
+        this.clientesModal = list || [];
         this.cargandoClientesModal = false;
       },
       error: () => {
@@ -121,14 +131,14 @@ export class HomeComponent implements OnInit {
   }
 
   get sugerenciasCliente(): ClienteResponseDto[] {
-    const q = this.documentoBusqueda.toLowerCase().trim();
-    let list = this.clientesModal;
+    const q = (this.documentoBusqueda || '').toLowerCase().trim();
+    let list = this.clientesModal || [];
     if (q) {
       list = list.filter(
         c =>
-          c.nombre.toLowerCase().includes(q) ||
-          c.documento.toLowerCase().includes(q) ||
-          c.telefono.replace(/\s/g, '').includes(q.replace(/\s/g, ''))
+          c.nombre?.toLowerCase().includes(q) ||
+          c.documento?.toLowerCase().includes(q) ||
+          c.telefono?.replace(/\s/g, '').includes(q.replace(/\s/g, ''))
       );
     }
     return list.slice(0, 12);
@@ -176,7 +186,7 @@ export class HomeComponent implements OnInit {
     }
     const q = this.documentoBusqueda.trim();
     if (!q) return;
-    const docExacto = this.clientesModal.find(
+    const docExacto = (this.clientesModal || []).find(
       c => c.documento === q || c.documento.replace(/\D/g, '') === q.replace(/\D/g, '')
     );
     if (docExacto) {
@@ -205,8 +215,7 @@ export class HomeComponent implements OnInit {
       next: () => {
         this.ventaExitosa = true;
         this.procesando = false;
-        // actualizar stock local
-        const b = this.bicicletas.find(x => x.codigo === this.bicicletaSeleccionada!.codigo);
+        const b = (this.bicicletas || []).find(x => x.codigo === this.bicicletaSeleccionada!.codigo);
         if (b) b.cantidadInventario -= this.cantidad;
         this.aplicarFiltros();
       },
@@ -218,11 +227,17 @@ export class HomeComponent implements OnInit {
   }
 
   formatPrecio(p: number): string {
+    if (p === null || p === undefined) return '$ 0';
     return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(p);
   }
 
   getBadgeClass(tipo: TipoBicicleta): string {
-    return { 'MONTAÑA': 'badge-montana', 'URBANA': 'badge-urbana', 'RUTA': 'badge-ruta' }[tipo] || '';
+    const badges: Record<string, string> = { 
+      'MONTAÑA': 'badge-montana', 
+      'URBANA': 'badge-urbana', 
+      'RUTA': 'badge-ruta' 
+    };
+    return badges[tipo] || '';
   }
 
   getDisponibilidadLabel(stock: number): string {
