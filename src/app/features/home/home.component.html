@@ -1,0 +1,267 @@
+
+<nav class="navbar">
+  <div class="navbar-brand" (click)="irA('/')">
+    <svg width="34" height="28" viewBox="0 0 34 28" fill="none">
+      <circle cx="7"  cy="21" r="6" stroke="#FF6B00" stroke-width="2.5"/>
+      <circle cx="27" cy="21" r="6" stroke="#FF6B00" stroke-width="2.5"/>
+      <path d="M7 21 L15 7 L27 21" stroke="#1a1a2e" stroke-width="2.5" stroke-linejoin="round" fill="none"/>
+      <line x1="15" y1="7"  x2="15" y2="14" stroke="#1a1a2e" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="11" y1="5"  x2="19" y2="5"  stroke="#1a1a2e" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <span class="brand-name">BikeControl</span>
+      <span class="brand-sub">Sistema de Gestión</span>
+    </div>
+  </div>
+  <div class="navbar-links">
+    <a class="nav-link" (click)="irA('/inventario')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Bicicletas
+    </a>
+    <a class="nav-link" (click)="irA('/clientes')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      Clientes
+    </a>
+    <a class="nav-link" (click)="irA('/movimientos')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/></svg>
+      Movimientos
+    </a>
+  </div>
+</nav>
+
+
+<section class="hero">
+  <h1 class="hero-title">Catálogo de Bicicletas</h1>
+  <p class="hero-sub">Descubre nuestra colección de bicicletas de montaña, ruta y urbanas</p>
+</section>
+
+
+<div class="search-zone">
+  <div class="search-bar-card">
+    <div class="search-input-wrapper">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input
+        class="search-input"
+        placeholder="Buscar por marca, modelo o código..."
+        [value]="searchQuery"
+        (input)="onSearch($any($event.target).value)"
+      >
+    </div>
+    <div class="filter-wrapper">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      <select class="filter-select" (change)="onFiltro($any($event.target).value)">
+        <option *ngFor="let f of filtros" [value]="f.value">{{ f.label }}</option>
+      </select>
+    </div>
+  </div>
+  <p class="search-count">Mostrando {{ bicicletasFiltradas.length }} de {{ totalVistaCatalogo }} bicicletas con stock</p>
+</div>
+
+
+<section class="catalogo">
+  <div class="bici-grid" *ngIf="loading">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6]"></div>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && bicicletasFiltradas.length === 0">
+    <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <ng-container *ngIf="todoInventarioAgotado; else emptyCatalogoFiltro">
+      <p>No hay bicicletas disponibles</p>
+      <span>Todo el inventario está agotado.</span>
+    </ng-container>
+    <ng-template #emptyCatalogoFiltro>
+      <p>No se encontraron bicicletas</p>
+      <span>Intenta con otro filtro o búsqueda</span>
+    </ng-template>
+  </div>
+
+  <div class="bici-grid" *ngIf="!loading && bicicletasFiltradas.length > 0">
+    <div class="bici-card" *ngFor="let b of bicicletasFiltradas">
+      <div class="bici-img">
+        <svg viewBox="0 0 120 90" width="110" height="82" fill="none">
+          <circle cx="22"  cy="62" r="18" stroke="#c0c8d8" stroke-width="3"/>
+          <circle cx="22"  cy="62" r="4"  fill="#c0c8d8"/>
+          <circle cx="98" cy="62" r="18" stroke="#c0c8d8" stroke-width="3"/>
+          <circle cx="98" cy="62" r="4"  fill="#c0c8d8"/>
+          <path d="M22 62 L48 20 L98 62 Z" stroke="#9aa3b2" stroke-width="3" stroke-linejoin="round"/>
+          <line x1="48" y1="20" x2="48" y2="40" stroke="#9aa3b2" stroke-width="3" stroke-linecap="round"/>
+          <line x1="38" y1="14" x2="58" y2="14" stroke="#9aa3b2" stroke-width="3" stroke-linecap="round"/>
+          <line x1="98" y1="62" x2="106" y2="36" stroke="#9aa3b2" stroke-width="3" stroke-linecap="round"/>
+          <line x1="100" y1="30" x2="112" y2="42" stroke="#9aa3b2" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="58" cy="52" r="6" stroke="#c0c8d8" stroke-width="2.5"/>
+        </svg>
+      </div>
+
+      <div class="bici-body">
+        <div class="bici-top-row">
+          <h3 class="bici-modelo">{{ b.modelo }}</h3>
+          <span class="bici-badge" [ngClass]="getBadgeClass(b.tipo)">{{ b.tipo | titlecase }}</span>
+        </div>
+        <p class="bici-marca">{{ b.marca }}</p>
+        <hr class="bici-hr">
+        <div class="bici-details">
+          <div>
+            <div class="detail-label">Código</div>
+            <div class="detail-val">#{{ b.codigo }}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="detail-label">Precio</div>
+            <div class="detail-precio">{{ formatPrecio(b.precio) }}</div>
+          </div>
+        </div>
+        <hr class="bici-hr">
+        <div class="bici-footer-row">
+          <div>
+            <div class="detail-label">Disponibilidad</div>
+            <div class="disp-val" [ngClass]="getDisponibilidadClass(b.cantidadInventario)">
+              {{ getDisponibilidadLabel(b.cantidadInventario) }}
+            </div>
+          </div>
+          <button
+            class="btn-comprar"
+            [disabled]="b.cantidadInventario === 0"
+            (click)="abrirModalCompra(b)"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            Comprar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <span class="footer-logo">BikeControl</span>
+  <span class="footer-copy">© 2026 BikeShop · Todos los derechos reservados</span>
+</footer>
+
+
+<div class="modal-overlay" *ngIf="showModal" (click)="cerrarModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+  
+    <div class="modal-success" *ngIf="ventaExitosa">
+      <div class="success-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h3 class="success-title">¡Compra exitosa!</h3>
+      <p class="success-msg">Venta registrada para <strong>{{ clienteEncontrado?.nombre }}</strong></p>
+      <div class="success-chip">
+        <span>{{ bicicletaSeleccionada?.marca }} {{ bicicletaSeleccionada?.modelo }}</span>
+        <span>{{ cantidad }} und · {{ formatPrecio(subtotal) }}</span>
+      </div>
+      <button class="btn-confirmar" style="width:100%;justify-content:center;margin-top:20px" (click)="cerrarModal()">
+        Cerrar
+      </button>
+    </div>
+
+
+    <ng-container *ngIf="!ventaExitosa">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Comprar Bicicleta</h3>
+          <p class="modal-subtitle">{{ bicicletaSeleccionada?.marca }} {{ bicicletaSeleccionada?.modelo }} · {{ formatPrecio(bicicletaSeleccionada?.precio || 0) }}</p>
+        </div>
+        <button class="btn-close" (click)="cerrarModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+       
+        <div class="modal-step">
+          <div class="step-label">
+            <span class="step-num">1</span> Identificación del cliente
+          </div>
+          <div class="autocomplete-wrap">
+            <input
+              class="modal-input autocomplete-input"
+              type="text"
+              placeholder="Busca por nombre, documento o teléfono..."
+              [(ngModel)]="documentoBusqueda"
+              (ngModelChange)="onClienteInput($event)"
+              (focus)="onClienteFocus()"
+              (blur)="onClienteBlurCerrar()"
+              (keydown.enter)="onClienteEnter($event)"
+              autocomplete="off"
+              aria-autocomplete="list"
+              [attr.aria-expanded]="mostrarSugerenciasCliente"
+            >
+            <ul
+              class="autocomplete-panel"
+              *ngIf="mostrarSugerenciasCliente"
+              role="listbox"
+            >
+              <li *ngIf="cargandoClientesModal" class="autocomplete-row autocomplete-muted" role="option">
+                Cargando clientes…
+              </li>
+              <ng-container *ngIf="!cargandoClientesModal">
+                <li *ngIf="clientesModal.length === 0" class="autocomplete-row autocomplete-muted" role="option">
+                  No hay clientes registrados
+                </li>
+                <li
+                  *ngIf="clientesModal.length > 0 && sugerenciasCliente.length === 0 && documentoBusqueda.trim()"
+                  class="autocomplete-row autocomplete-muted"
+                  role="option"
+                >
+                  Sin coincidencias
+                </li>
+                <li
+                  *ngFor="let c of sugerenciasCliente"
+                  class="autocomplete-row"
+                  role="option"
+                  (mousedown)="seleccionarClienteSugerido(c, $event)"
+                >
+                  <span class="ac-line1">{{ c.nombre }}</span>
+                  <span class="ac-line2">Doc. {{ c.documento }} · {{ c.telefono }}</span>
+                </li>
+              </ng-container>
+            </ul>
+          </div>
+          <div class="error-msg" *ngIf="errorCliente">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            {{ errorCliente }}
+          </div>
+          <div class="cliente-chip" *ngIf="clienteEncontrado">
+            <div class="cliente-chip-avatar">{{ clienteEncontrado.nombre.charAt(0) }}</div>
+            <div>
+              <div class="cliente-chip-nombre">{{ clienteEncontrado.nombre }}</div>
+              <div class="cliente-chip-doc">Doc: {{ clienteEncontrado.documento }}</div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" style="margin-left:auto;flex-shrink:0"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+
+    
+        <div class="modal-step">
+          <div class="step-label">
+            <span class="step-num">2</span> Cantidad
+          </div>
+          <div class="qty-row">
+            <button class="qty-btn" (click)="cambiarCantidad(-1)">−</button>
+            <span class="qty-val">{{ cantidad }}</span>
+            <button class="qty-btn" (click)="cambiarCantidad(+1)">+</button>
+            <span class="qty-stock">de {{ bicicletaSeleccionada?.cantidadInventario }} disponibles</span>
+          </div>
+        </div>
+
+       
+        <div class="modal-resumen">
+          <div class="resumen-row"><span>Precio unitario</span><span>{{ formatPrecio(bicicletaSeleccionada?.precio || 0) }}</span></div>
+          <div class="resumen-row"><span>Cantidad</span><span>× {{ cantidad }}</span></div>
+          <hr style="border:none;border-top:1px solid #f0f0f0;margin:8px 0">
+          <div class="resumen-row resumen-total"><span>Total</span><span>{{ formatPrecio(subtotal) }}</span></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn-confirmar" [disabled]="!clienteEncontrado || procesando" (click)="confirmarCompra()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          {{ procesando ? 'Procesando...' : 'Confirmar compra' }}
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</div>

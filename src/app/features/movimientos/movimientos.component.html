@@ -1,0 +1,92 @@
+<div class="page-wrapper">
+  <div class="page-back">
+    <a routerLink="/" class="btn-volver">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Regresar al inicio
+    </a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-title">
+      <h1>Reporte de Movimientos</h1>
+      <p>Auditoría de entradas y salidas de inventario</p>
+    </div>
+  </div>
+
+
+  <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr)">
+    <div class="stat-card success">
+      <div class="stat-label">
+        Total Entradas
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="8 12 12 16 16 12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
+      </div>
+      <div class="stat-value success">{{ totalEntradas }}</div>
+      <div class="stat-sub">Unidades ingresadas</div>
+    </div>
+
+    <div class="stat-card danger">
+      <div class="stat-label">
+        Total Salidas
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>
+      </div>
+      <div class="stat-value danger">{{ totalSalidas }}</div>
+      <div class="stat-sub">Unidades vendidas</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-label">
+        Balance
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".4"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      </div>
+      <div class="stat-value">{{ balance }}</div>
+      <div class="stat-sub">Diferencia neta</div>
+    </div>
+  </div>
+
+
+  <div class="card">
+    <div class="timeline-header">
+      <h2 class="section-title">Historial de Movimientos</h2>
+      <div class="filtro-group">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity=".5"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        <select class="form-control filtro-select" (change)="cambiarFiltro($any($event.target).value)">
+          <option value="TODOS">Todos</option>
+          <option value="ENTRADA">Entradas</option>
+          <option value="SALIDA">Salidas</option>
+        </select>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="spinner"></div>
+
+    <div *ngIf="!loading && movimientosFiltrados.length === 0" class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <p>No hay movimientos registrados</p>
+    </div>
+
+    <div class="timeline" *ngIf="!loading && movimientosFiltrados.length > 0">
+      <div class="timeline-item" *ngFor="let m of movimientosFiltrados">
+        <div class="timeline-dot" [class.entrada]="m.tipoMovimiento === 'ENTRADA'" [class.salida]="m.tipoMovimiento === 'SALIDA'">
+          <svg *ngIf="m.tipoMovimiento === 'ENTRADA'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="8 12 12 16 16 12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
+          <svg *ngIf="m.tipoMovimiento === 'SALIDA'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>
+        </div>
+        <div class="timeline-line"></div>
+
+        <div class="timeline-content">
+          <div class="timeline-content-top">
+            <div class="timeline-left">
+              <span class="badge" [class.badge-entrada]="m.tipoMovimiento === 'ENTRADA'" [class.badge-salida]="m.tipoMovimiento === 'SALIDA'">
+                {{ m.tipoMovimiento | titlecase }}
+              </span>
+              <span class="mov-codigo">{{ descripcionBici(m) }}</span>
+            </div>
+            <span class="mov-cantidad" [class.entrada]="m.tipoMovimiento === 'ENTRADA'" [class.salida]="m.tipoMovimiento === 'SALIDA'">
+              {{ m.tipoMovimiento === 'ENTRADA' ? '+' : '-' }}{{ m.cantidad }}
+            </span>
+          </div>
+          <div class="timeline-fecha">{{ formatFecha(m.fecha) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,152 @@
+<div class="page-wrapper">
+  <div class="page-back">
+    <a routerLink="/" class="btn-volver">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Regresar al inicio
+    </a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-title">
+      <h1>Terminal de Ventas</h1>
+      <p>Sistema punto de venta (POS)</p>
+    </div>
+  </div>
+
+  <div class="ventas-layout">
+ 
+    <div class="ventas-left">
+
+
+      <div class="card step-card">
+        <div class="step-header">
+          <span class="step-number">1</span>
+          <h2 class="step-title">Seleccionar Cliente</h2>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Buscar por Documento</label>
+          <div class="search-action-wrapper">
+            <div class="search-wrapper" style="flex:1">
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input
+                class="form-control"
+                placeholder="Ingresa el documento..."
+                [(ngModel)]="documentoBusqueda"
+                (keyup.enter)="buscarCliente()"
+              >
+            </div>
+            <button class="btn btn-primary" (click)="buscarCliente()" [disabled]="buscandoCliente">
+              {{ buscandoCliente ? '...' : 'Buscar' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="alert alert-error" *ngIf="errorCliente">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          {{ errorCliente }}
+        </div>
+
+        <div class="cliente-found" *ngIf="clienteEncontrado">
+          <div class="cliente-found-avatar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div>
+            <div class="cliente-found-nombre">{{ clienteEncontrado.nombre }}</div>
+            <div class="cliente-found-doc">{{ clienteEncontrado.documento }} · {{ clienteEncontrado.telefono }}</div>
+          </div>
+          <div class="cliente-found-check">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="card step-card">
+        <div class="step-header">
+          <span class="step-number">2</span>
+          <h2 class="step-title">Agregar Productos</h2>
+        </div>
+
+        <div class="form-group" style="margin-bottom:16px">
+          <label class="form-label">Buscar Bicicleta</label>
+          <div class="search-wrapper">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input class="form-control" placeholder="Código o modelo..." [value]="searchBici" (input)="filtrarBicicletas($any($event.target).value)">
+          </div>
+        </div>
+
+        <div class="bicicletas-grid">
+          <div
+            class="bici-card"
+            *ngFor="let b of bicicletasFiltradas"
+            [class.sin-stock]="b.cantidadInventario <= 0"
+            (click)="agregarAlCarrito(b)"
+          >
+            <div class="bici-card-top">
+              <span class="badge" [ngClass]="getBadgeClass(b.tipo)">{{ b.tipo | titlecase }}</span>
+              <span class="bici-stock" [class.stock-bajo]="b.cantidadInventario < 3">
+                Stock: {{ b.cantidadInventario }}
+              </span>
+            </div>
+            <div class="bici-nombre">{{ b.marca }} {{ b.modelo }}</div>
+            <div class="bici-precio">{{ formatPrecio(b.precio) }}</div>
+            <div class="bici-add">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Agregar
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="card resumen-card">
+      <div class="resumen-header">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <h2 class="step-title">Resumen de Venta</h2>
+      </div>
+
+      <div *ngIf="carrito.length === 0" class="empty-state">
+        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <p>El carrito está vacío</p>
+        <span>Agrega productos para continuar</span>
+      </div>
+
+      <div *ngIf="carrito.length > 0" class="carrito-items">
+        <div class="carrito-item" *ngFor="let item of carrito">
+          <div class="carrito-item-info">
+            <span class="carrito-item-nombre">{{ item.bicicleta.marca }} {{ item.bicicleta.modelo }}</span>
+            <span class="carrito-item-precio">{{ formatPrecio(item.subtotal) }}</span>
+          </div>
+          <div class="carrito-item-ctrl">
+            <button class="qty-btn" (click)="cambiarCantidad(item, -1)">−</button>
+            <span class="qty-val">{{ item.cantidad }}</span>
+            <button class="qty-btn" (click)="cambiarCantidad(item, +1)">+</button>
+            <button class="btn btn-ghost" style="padding:4px" (click)="quitarItem(item)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="resumen-total" *ngIf="carrito.length > 0">
+        <hr class="divider">
+        <div class="total-row">
+          <span>Total</span>
+          <span class="total-valor">{{ formatPrecio(total) }}</span>
+        </div>
+        <button
+          class="btn btn-primary"
+          style="width:100%; justify-content:center; margin-top:16px; padding:14px"
+          [disabled]="!puedeVender"
+          (click)="procesarVenta()"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          {{ procesando ? 'Procesando...' : 'Confirmar Venta' }}
+        </button>
+        <p class="resumen-hint" *ngIf="!clienteEncontrado">⚠ Selecciona un cliente para continuar</p>
+      </div>
+    </div>
+  </div>
+</div>

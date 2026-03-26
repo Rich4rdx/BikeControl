@@ -1,0 +1,185 @@
+<div class="page-wrapper">
+  <div class="page-back">
+    <a routerLink="/" class="btn-volver">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Regresar al inicio
+    </a>
+  </div>
+
+  <div class="page-header">
+    <div class="page-title">
+      <h1>Directorio de Clientes</h1>
+      <p>Gestiona la base de datos de clientes</p>
+    </div>
+    <button type="button" class="btn btn-primary" (click)="openModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nuevo Cliente
+    </button>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">
+        Total clientes
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".4"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="stat-value">{{ clientes.length }}</div>
+      <div class="stat-sub">Registrados en el sistema</div>
+    </div>
+
+    <div class="stat-card" [class.warning]="hayFiltroActivo">
+      <div class="stat-label">
+        En listado
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".45"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      </div>
+      <div class="stat-value" [class.warning]="hayFiltroActivo && clientesFiltrados.length === 0">{{ clientesFiltrados.length }}</div>
+      <div class="stat-sub">{{ hayFiltroActivo ? 'Según búsqueda y orden' : 'Sin filtro de búsqueda' }}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head card-head--split">
+      <h2 class="section-title">Clientes registrados</h2>
+      <div class="card-toolbar">
+        <input
+          class="form-control"
+          type="search"
+          placeholder="Buscar por nombre, documento o teléfono..."
+          [value]="searchQuery"
+          (input)="buscar($any($event.target).value)"
+        >
+        <select class="form-control" style="max-width: 200px" [value]="ordenActivo" (change)="onOrden($any($event.target).value)">
+          <option *ngFor="let o of ordenes" [value]="o.value">{{ o.label }}</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="table-meta">Mostrando {{ clientesFiltrados.length }} de {{ clientes.length }} clientes</p>
+
+    <div *ngIf="loading" class="spinner"></div>
+
+    <div *ngIf="!loading && clientes.length === 0" class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <p>No hay clientes registrados</p>
+      <span>Agrega el primero con «Nuevo Cliente»</span>
+    </div>
+
+    <div *ngIf="!loading && clientes.length > 0 && clientesFiltrados.length === 0" class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <p>Ningún cliente coincide</p>
+      <span>Prueba otro término de búsqueda</span>
+    </div>
+
+    <div *ngIf="!loading && clientesFiltrados.length > 0" class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Documento</th>
+            <th>Nombre</th>
+            <th>Teléfono</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let c of clientesFiltrados"
+            class="row-clickable"
+            [class.row-selected]="selectedCliente?.documento === c.documento"
+            (click)="seleccionar(c)"
+          >
+            <td><span class="td-code">{{ c.documento }}</span></td>
+            <td>{{ c.nombre }}</td>
+            <td>{{ c.telefono }}</td>
+            <td>
+              <button type="button" class="btn btn-ghost" title="Ver historial" (click)="seleccionar(c); $event.stopPropagation()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2 class="section-title">Historial de compras</h2>
+    </div>
+
+    <div *ngIf="!selectedCliente" class="empty-state" style="padding: 36px 16px">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+      <p>Selecciona un cliente</p>
+      <span>Haz clic en una fila de la tabla para ver sus compras</span>
+    </div>
+
+    <div *ngIf="selectedCliente && loadingHistorial" class="spinner"></div>
+
+    <ng-container *ngIf="selectedCliente && !loadingHistorial">
+      <div class="historial-inline-head">
+        <div class="historial-inline-cliente">
+          <span class="historial-inline-avatar">{{ iniciales(selectedCliente.nombre) }}</span>
+          <div>
+            <span class="historial-inline-nombre">{{ selectedCliente.nombre }}</span>
+            <span class="historial-inline-doc">Documento {{ selectedCliente.documento }}</span>
+          </div>
+        </div>
+        <span class="historial-inline-chip">{{ historialVentas.length }} compra(s)</span>
+      </div>
+
+      <div *ngIf="historialVentas.length === 0" class="empty-state" style="padding: 28px 16px">
+        <p>Sin compras registradas</p>
+        <span>Este cliente aún no tiene ventas asociadas</span>
+      </div>
+
+      <ul class="ventas-list-flat" *ngIf="historialVentas.length > 0">
+        <li class="venta-row" *ngFor="let v of historialVentas">
+          <div class="venta-row-top">
+            <span class="venta-row-id">#{{ v.idVenta }}</span>
+            <span class="venta-row-total">{{ formatPrecio(v.total) }}</span>
+          </div>
+          <div class="venta-row-sub">
+            <span>{{ formatFecha(v.fecha) }}</span>
+            <span>{{ (v.detalles?.length || 0) }} producto(s)</span>
+          </div>
+        </li>
+      </ul>
+    </ng-container>
+  </div>
+</div>
+
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">Nuevo Cliente</h3>
+      <button type="button" class="btn btn-ghost" (click)="closeModal()" aria-label="Cerrar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="guardar()">
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Documento *</label>
+          <input class="form-control" formControlName="documento" placeholder="1234567890">
+          <span class="field-error" *ngIf="form.get('documento')?.invalid && form.get('documento')?.touched">El documento es requerido</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nombre completo *</label>
+          <input class="form-control" formControlName="nombre" placeholder="Carlos Rodríguez">
+          <span class="field-error" *ngIf="form.get('nombre')?.invalid && form.get('nombre')?.touched">El nombre es requerido</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Teléfono *</label>
+          <input class="form-control" formControlName="telefono" placeholder="3001234567">
+          <span class="field-error" *ngIf="form.get('telefono')?.invalid && form.get('telefono')?.touched">El teléfono es requerido</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="saving">
+          {{ saving ? 'Guardando...' : 'Registrar Cliente' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
