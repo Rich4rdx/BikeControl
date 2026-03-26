@@ -29,7 +29,7 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
       </div>
       <div class="stat-info">
-        <span class="stat-value">{{ bicicletas.length }}</span>
+        <span class="stat-value">{{ (bicicletas?.length || 0) }}</span>
         <span class="stat-label">Modelos registrados</span>
       </div>
     </div>
@@ -39,17 +39,17 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       </div>
       <div class="stat-info">
-        <span class="stat-value">{{ totalStock }}</span>
+        <span class="stat-value">{{ totalStock || 0 }}</span>
         <span class="stat-label">Unidades en stock</span>
       </div>
     </div>
 
-    <div class="stat-card" [class.warning]="bajosStock > 0">
-      <div class="stat-icon" [class.orange]="bajosStock > 0" [class.gray]="bajosStock === 0">
+    <div class="stat-card" [class.warning]="(bajosStock || 0) > 0">
+      <div class="stat-icon" [class.orange]="(bajosStock || 0) > 0" [class.gray]="(bajosStock || 0) === 0">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
       </div>
       <div class="stat-info">
-        <span class="stat-value" [class.text-orange]="bajosStock > 0">{{ bajosStock }}</span>
+        <span class="stat-value" [class.text-orange]="(bajosStock || 0) > 0">{{ bajosStock || 0 }}</span>
         <span class="stat-label">Bajo stock (< 3 und)</span>
       </div>
     </div>
@@ -69,7 +69,7 @@
   </div>
 
   <div class="bici-grid" *ngIf="!loading">
-    <div class="bici-card" *ngFor="let b of bicicletasFiltradas" [class.out-of-stock]="b.cantidadInventario === 0">
+    <div class="bici-card" *ngFor="let b of (bicicletasFiltradas || [])" [class.out-of-stock]="b.cantidadInventario === 0">
       <div class="card-image">
         <svg viewBox="0 0 120 90" width="80" height="60" fill="none">
           <circle cx="22" cy="62" r="18" stroke="#cbd5e1" stroke-width="3"/>
@@ -91,5 +91,9 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && (bicicletasFiltradas?.length || 0) === 0">
+    <p>No se encontraron bicicletas o hay un problema de conexión.</p>
   </div>
 </div>
